@@ -243,7 +243,6 @@ def farmers_with_balance(request):
     data = []
 
     for farmer in farmers:
-
         earned = MilkCollection.objects.filter(
             farmer=farmer
         ).aggregate(

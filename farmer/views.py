@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import ListAPIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework import generics
 
 from rest_framework.exceptions import PermissionDenied
 
@@ -112,9 +113,9 @@ class FeedbackViewSet(ModelViewSet):
                 "Only farmers can access this endpoint."
             )
 
-        feedbacks = Feedback.objects.filter(
+        feedbacks = (Feedback.objects.filter(
             farmer=farmer
-        ).order_by('-created_at')
+        ).order_by('-created_at'))
 
         return feedbacks
 
@@ -123,13 +124,12 @@ class FeedbackViewSet(ModelViewSet):
         serializer.save(farmer=farmer)
 
 
-    
 class FarmerNoticeView(generics.ListAPIView):
     serializer_class = NoticeSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        notices=( 
+        notices = (
             Notice.objects
             .filter(target__in=['ALL', 'FARMERS'])
             .order_by('-created_at')

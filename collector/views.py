@@ -129,7 +129,6 @@ class MyCollectionsView(generics.ListAPIView):
             .select_related('farmer')
             .order_by('-created_at')
         )
-
         return collections
     
 class PorterNoticeView(generics.ListAPIView):

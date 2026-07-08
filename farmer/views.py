@@ -1,6 +1,7 @@
 from datetime import date
 from django.utils import timezone
 from django.db.models import Sum
+from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -118,27 +119,22 @@ class FeedbackViewSet(ModelViewSet):
         return feedbacks
 
     def perform_create(self, serializer):
-
         farmer = self.request.user.farmer_profile
-
-        serializer.save(
-            farmer=farmer
-        )
+        serializer.save(farmer=farmer)
 
 
-
-class FarmerNoticeView(APIView):
+    
+class FarmerNoticeView(generics.ListAPIView):
+    serializer_class = NoticeSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-
-        notices = Notice.objects.filter(
-            target__in=['ALL', 'FARMERS']
-        ).order_by('-created_at')
-
-        serializer = NoticeSerializer(notices, many=True)
-
-        return Response(serializer.data)
+    def get_queryset(self):
+        notices=( 
+            Notice.objects
+            .filter(target__in=['ALL', 'FARMERS'])
+            .order_by('-created_at')
+        )
+        return notices
     
 
 

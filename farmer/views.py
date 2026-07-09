@@ -73,26 +73,27 @@ class FarmerDashboardView(APIView):
             "monthly_liters":monthly_liters
         })
 
-
 # ============================================================
 # FARMER COLLECTIONS
 # ============================================================
 
-class FarmerCollectionsView(ListAPIView):
+class FarmerCollectionsView(generics.ListAPIView):
     serializer_class = MilkCollectionSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-
-        farmer = self.request.user.farmer_profile
-
+        try:
+            farmer = self.request.user.farmer_profile
+        except FarmerProfile.DoesNotExist:
+            raise PermissionDenied(
+                "Only farmers can access this endpoint."
+            )
         collections = (
             MilkCollection.objects
             .filter(farmer=farmer)
             .select_related('porter')
             .order_by('-created_at')
         )
-
         return collections
 
 
@@ -105,22 +106,21 @@ class FeedbackViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-
         try:
             farmer = self.request.user.farmer_profile
         except:
-            raise PermissionDenied(
-                "Only farmers can access this endpoint."
-            )
+            raise PermissionDenied("Only farmers can access this endpoint.")
 
-        feedbacks = (Feedback.objects.filter(
-            farmer=farmer
-        ).order_by('-created_at'))
-
+        feedbacks = (Feedback.objects.filter(farmer=farmer).order_by('-created_at'))
         return feedbacks
 
     def perform_create(self, serializer):
-        farmer = self.request.user.farmer_profile
+        try:
+            farmer = self.request.user.farmer_profile
+        except FarmerProfile.DoesNotExist:
+            raise PermissionDenied(
+                "Only farmers can create feedback."
+            )
         serializer.save(farmer=farmer)
 
 
